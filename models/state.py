@@ -1,33 +1,35 @@
 #!/usr/bin/python3
-""" 0x02. AirBnB clone - MySQL, task 6. DBStorage - States and Cities """
+""" State Module for HBNB project """
+import os
+import models
 from sqlalchemy import Column, String
+from models.city import City
 from sqlalchemy.orm import relationship
-from .city import City
-from .base_model import BaseModel, Base
-from os import getenv
+from models.base_model import BaseModel, Base
 
 
 class State(BaseModel, Base):
-    """Defines attributes for `State` as it inherits from `BaseModel`,
-    and ORM properties in relation to table `states`.
-    Attributes:
-        name (Column): name of state, string of max 128 chars
-        cities (relationship): one-to-many-association to `City`
-    """
-    __tablename__ = 'states'
-    name = Column(String(128), nullable=False)
-    cities = relationship("City", cascade="all, delete-orphan",
-                          backref="state")
+    '''
+        Implementation for the State.
+    '''
+    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
+        __tablename__ = "states"
+        name = Column(String(128), nullable=False)
+        cities = relationship("City", backref="state",
+                              cascade="delete")
+    else:
+        name = ""
 
-    if getenv('HBNB_TYPE_STORAGE') != 'db':
         @property
         def cities(self):
-            """ Getter for list of all `City` objects when in file storage
-            mode.
             """
-            from . import storage
-            cities = []
-            for city in storage.all(City).values():
-                if city.state_id == self.id:
-                    cities.append(city)
-            return
+                Getter method that returns list of city
+                instances with state_id == State.id
+                FileStorage Relationship between State and City
+            """
+            cities_dict = models.storage.all(City)
+            city_list = []
+            for key, value in cities_dict.items():
+                if value.state_id == self.id:
+                    city_list.append(value)
+            return city_list
